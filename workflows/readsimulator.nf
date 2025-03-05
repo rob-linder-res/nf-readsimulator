@@ -3,8 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                 } from '../modules/nf-core/fastqc/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -24,14 +23,20 @@ workflow READSIMULATOR {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
+    
     //
-    // MODULE: Run FastQC
+    // SUBWORKFLOW: Generate a user-specified number of simulated Illumina short-reads from a human fasta and a bug fasta- combine the two in a user-specified proportion
     //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    SIMULATE ( ch_fastq_only,
+                ch_ref,
+                ch_introns
+             )
+
+    ch_multiqc_files = ch_multiqc_files.mix(QCALIGN.out.nanostats_report.map {it[1]})
+    ch_multiqc_files = ch_multiqc_files.mix(QCALIGN.out.bam_qc.map {it[1]})
+    ch_versions = ch_versions.mix(QCALIGN.out.versions)
+    aligned_fasta = QCALIGN.out.aligned_fasta
+    
 
     //
     // Collate and save software versions
