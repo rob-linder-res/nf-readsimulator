@@ -26,8 +26,14 @@
                 "exists": true,
                 "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                 "errorMessage": "Fasta file for humans '.fa', 'fna', '.fasta', '.fna.gz', '.fa.gz', or '.fast.gz'"
+            },
+            "seed": {
+                "type": "integer",
+                "exists": true,
+                "pattern": "^\\d+$",
+                "errorMessage": "Set the seed for the random read generator- each seed represents a different run/biological replicate'"
             }
         },
-        "required": ["sample", "human_fasta", "bug_fasta"]
+        "required": ["sample", "human_fasta", "bug_fasta", "seed"]
     }
 }

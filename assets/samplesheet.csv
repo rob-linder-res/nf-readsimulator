@@ -1,2 +1,3 @@
-sample,human_fasta,bug_fasta
+sample,human_fasta,bug_fasta,seed
+sample1,s3://res-x-internal-data/reference/reference-genomes/GCF_000001405.39_GRCh38.p13_genomic.fna,s3://res-x-internal-data/reference/resilience_curation/version3/curated_database_version3.fasta,42
 

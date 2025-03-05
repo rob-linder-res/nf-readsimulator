@@ -14,6 +14,7 @@ process ART_ILLUMINA {
     val(sequencing_system)
     val(reads)
     val(read_length)
+    val(seed)
 
     output:
     tuple val(meta), path("*.fq.gz").             , emit: fastq
@@ -32,6 +33,7 @@ process ART_ILLUMINA {
     """
     art_illumina \\
         -ss $sequencing_system \\
+        -rs $seed \\
         -i $fasta \\
         -l $read_length \\
         -c $reads \\

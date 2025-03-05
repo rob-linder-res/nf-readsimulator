@@ -1,36 +1,42 @@
-// TODO nf-core: If in doubt look at other nf-core/subworkflows to see how we are doing things! :)
-//               https://github.com/nf-core/modules/tree/master/subworkflows
-//               You can also ask for help via your pull request or on the #subworkflows channel on the nf-core Slack workspace:
-//               https://nf-co.re/join
-// TODO nf-core: A subworkflow SHOULD import at least two modules
-
-include { SAMTOOLS_SORT      } from '../../../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/main'
+include { ART_ILLUMINA as HUMAN_READS } from '../../modules/nf-core/art/illumina/main'
+include { ART_ILLUMINA as BUG_READS   } from '../../modules/nf-core/art/illumina/main'
 
 workflow SIMULATE {
 
     take:
-    // TODO nf-core: edit input (take) channels
-    ch_bam // channel: [ val(meta), [ bam ] ]
+    ch_human_fasta
+    ch_bug_fasta
+    ch_seed
 
     main:
 
     ch_versions = Channel.empty()
-
-    // TODO nf-core: substitute modules here for the modules of your subworkflow
-
-    SAMTOOLS_SORT ( ch_bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions.first())
-
-    SAMTOOLS_INDEX ( SAMTOOLS_SORT.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
-
+    
+    def human_reads = params.reads * params.fraction_human
+    def bug_reads = params.reads - human_reads
+    
+    HUMAN_READS ( ch_human_fasta,
+                  params.sequencing_system,
+                  human_reads,
+                  params.read_length,
+                  ch_seed
+                 )
+                 
+    ch_versions = ch_versions.mix(HUMAN_READS.out.versions.first())
+    
+    BUG_READS ( ch_bug_fasta,
+                params.sequencing_system,
+                bug_reads,
+                params.read_length,
+                ch_seed
+                )
+                
+    ch_versions = ch_versions.mix(BUG_READS.out.versions.first())
+    
     emit:
-    // TODO nf-core: edit emitted channels
-    bam      = SAMTOOLS_SORT.out.bam           // channel: [ val(meta), [ bam ] ]
-    bai      = SAMTOOLS_INDEX.out.bai          // channel: [ val(meta), [ bai ] ]
-    csi      = SAMTOOLS_INDEX.out.csi          // channel: [ val(meta), [ csi ] ]
+    human_reads      = HUMAN_READS.out.fastq           // channel: [ val(meta), [ fq.gz ] ]
+    bug_reads        = BUG_READS.out.fastq             // channel: [ val(meta), [ fq.gz ] ]
 
-    versions = ch_versions                     // channel: [ versions.yml ]
+    versions         = ch_versions                     // channel: [ versions.yml ]
 }
 
