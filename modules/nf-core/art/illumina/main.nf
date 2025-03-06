@@ -1,23 +1,23 @@
-process ART_ILLUMINA {
-
+process ARTILLUMINA {
     tag "$meta.id"
     label 'process_single'
+    debug true
 
     // WARN: Version information not provided by tool on CLI. Please update version string below when bumping container versions.
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/art:2016.06.05--abd910249b0b53f1':
-        'community.wave.seqera.io/library/art:2016.06.05--abd910249b0b53f1' }"
+        'oras://community.wave.seqera.io/library/art_bioawk:f7eb38b1357af99b' :
+        'community.wave.seqera.io/library/art_bioawk:f7eb38b1357af99b' }"
 
     input:
     tuple val(meta), path(fasta)
     val(sequencing_system)
     val(reads)
     val(read_length)
-    val(seed)
+    tuple val(meta), val(seed)
 
     output:
-    tuple val(meta), path("*.fq.gz").             , emit: fastq
+    tuple val(meta), path("*.fq.gz")              , emit: fastq
     tuple val(meta), path("*.aln"), optional:true , emit: aln
     tuple val(meta), path("*.sam"), optional:true , emit: sam
     path "versions.yml"                           , emit: versions
@@ -28,15 +28,30 @@ process ART_ILLUMINA {
     script:
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
+    def args3 = task.ext.args3 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def VERSION = '2016.06.05' // WARN: Version information not provided by tool on CLI. Please update this string when bumping container versions.
     """
+    num_sequences=\$(cat $fasta | grep ">" | wc -l)
+    
+    if [[ \$num_sequences -gt $reads ]]; then
+        bioawk -c fastx 'NR<=$reads {print ">"\$name"\\n"\$seq}\' $fasta > downsampled_ref.fasta
+        num_reads=1
+    else 
+        cat $fasta > downsampled_ref.fasta
+        num_reads=\$((($reads / \$num_sequences) + ($reads % \$num_sequences > 0)))
+    fi
+    
+    echo \$num_sequences
+    echo $reads
+    echo \$num_reads
+    
     art_illumina \\
         -ss $sequencing_system \\
         -rs $seed \\
-        -i $fasta \\
+        -i downsampled_ref.fasta \\
         -l $read_length \\
-        -c $reads \\
+        -c \$num_reads \\
         -o $prefix \\
         $args
 
@@ -44,6 +59,11 @@ process ART_ILLUMINA {
         --no-name \\
         $args2 \\
         $prefix*.fq
+    
+    mv "${prefix}1.fq.gz" "${prefix}_R1.fq.gz"
+    mv "${prefix}2.fq.gz" "${prefix}_R2.fq.gz"
+    
+    for file in *.fq.gz ; do mv \$file \${$args3} ; done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

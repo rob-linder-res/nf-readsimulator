@@ -194,9 +194,6 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
-            "$ref": "#/$defs/reference_genome_options"
-        },
-        {
             "$ref": "#/$defs/institutional_config_options"
         },
         {
@@ -220,9 +217,9 @@
             "default": 30000000
         },
         "fraction_human": {
-            "type": "float",
+            "type": "number",
             "description": "The fraction of reads that originate from the human genome.",
-            "default": 0.99
+            "default": 0.99,
             "minimum": 0,
             "maximum": 1
         }
