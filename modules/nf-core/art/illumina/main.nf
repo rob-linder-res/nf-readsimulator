@@ -64,7 +64,9 @@ process ARTILLUMINA {
     mv "${prefix}2.fq.gz" "${prefix}_R2.fq.gz"
     
     for file in *.fq.gz ; do mv \$file \${$args3} ; done
-
+    
+    rm -f downsampled_ref.fasta
+    
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         art: $VERSION
