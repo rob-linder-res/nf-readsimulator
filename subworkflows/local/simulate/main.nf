@@ -22,6 +22,8 @@ workflow SIMULATE {
                   params.sequencing_system,
                   human_reads.toInteger(),
                   params.read_length,
+                  params.insert_length,
+                  params.std_dev,
                   ch_seed
                  )
                  
@@ -31,6 +33,8 @@ workflow SIMULATE {
                 params.sequencing_system,
                 bug_reads.toInteger(),
                 params.read_length,
+                params.insert_length,
+                params.std_dev,
                 ch_seed
                 )
                 

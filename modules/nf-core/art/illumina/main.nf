@@ -14,6 +14,8 @@ process ARTILLUMINA {
     val(sequencing_system)
     val(reads)
     val(read_length)
+    val(insert_length)
+    val(insert_length_sd)
     tuple val(meta), val(seed)
 
     output:
@@ -49,9 +51,11 @@ process ARTILLUMINA {
     art_illumina \\
         -ss $sequencing_system \\
         -rs $seed \\
+        -m $insert_length \\
         -i downsampled_ref.fasta \\
         -l $read_length \\
         -c \$num_reads \\
+        -s $insert_length_sd \\
         -o $prefix \\
         $args
 

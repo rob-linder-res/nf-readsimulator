@@ -204,7 +204,7 @@
         "sequencing_system": {
             "type": "string",
             "description": "The Illumina sequencing system to simulate reads from",
-            "default": "GA2"
+            "default": "HS25"
         },
         "read_length": {
             "type": "integer",
@@ -215,6 +215,16 @@
             "type": "integer",
             "description": "The total number of reads to simulate.",
             "default": 30000000
+        },
+        "insert_length": {
+            "type": "integer",
+            "description": "The mean length of the insert.",
+            "default": 300
+        },
+        "std_dev": {
+            "type": "integer",
+            "description": "The standard deviation of the length of the insert.",
+            "default": 50
         },
         "fraction_human": {
             "type": "number",
